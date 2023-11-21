@@ -90,17 +90,8 @@ class MultiAgentEnv(gym.Env):
 
     def get_radir_detect(self ,self_p , self_angle , enemy_p , normalization_param =1 , noisy = False):
 
-        theat = self_angle - np.array([np.pi/2])
-        p = enemy_p - self_p 
-        p_0 = math.cos(theat) * p[0] + math.sin(theat) * p[1]
-        p_1 = math.cos(theat) * p[1] - math.sin(theat) * p[0]
-
-        if noisy:
-            dis_noise = random.uniform(-1,1) * 5
-            ang_noise = random.uniform(-1,1) * 0.001 * 180 / np.pi
-            dist_angle = np.array([np.linalg.norm(enemy_p - self_p) / normalization_param + dis_noise , math.atan2(p_1 , p_0) + ang_noise ]  ,dtype=np.float32)
-        else:
-            dist_angle = np.array([np.linalg.norm(enemy_p - self_p) / normalization_param  , math.atan2(p_1 , p_0)]  ,dtype=np.float32)
+	###################################################
+	###################################################
         return  dist_angle
 
 
@@ -127,94 +118,9 @@ class MultiAgentEnv(gym.Env):
         done_n = False      
         fun = self.Fun
 
-        t_p = self.agents[0].state.p_pos 
-        t_angle = self.agents[0].angle
-        t_v = self.agents[0].state.p_vel
-        state_t = np.array([t_p[0] , t_p[1] , t_angle[0] , t_v[0]])
-        t_cmd = (action_n[0] * 9.8 * 9) 
-        t_dtheat = t_cmd / t_v
-        self.agents[0].last_cmd = self.agents[0].cmd
-        self.agents[0].cmd = t_cmd
-
-
-        d_p = self.agents[1].state.p_pos 
-        d_angle = self.agents[1].angle
-        d_v = self.agents[1].state.p_vel   
-        state_d = np.array([d_p[0] , d_p[1] , d_angle[0] , d_v[0]]) 
-        d_cmd = (action_n[1] * 9.8 * 15)
-        d_dtheat = d_cmd / d_v
-        self.agents[1].last_cmd = self.agents[1].cmd
-        self.agents[1].cmd = d_cmd
-
-        a_p = self.landmarks[0].state.p_pos 
-        a_angle = self.landmarks[0].angle
-        a_v = self.landmarks[0].state.p_vel
-        state_a = np.array([a_p[0] , a_p[1] , a_angle[0] , a_v[0]]) 
-
-
-
-        R , obs_q = self.get_radir_detect(a_p , a_angle , t_p , noisy= False)
-        tempq = obs_q - np.pi / 2 + a_angle
-        dq = (t_v[0] * math.sin(t_angle - tempq) - a_v[0] * math.sin(a_angle - tempq) )/R
-        dtheatm = 5 *  dq
-
-        ############################################################################
-
-        ############################################################################
-
-        for i in range(int(self.ctrl_t / self.dt)):
-            state_t = self.RK4(fun , state_t , t_dtheat , self.dt)
-            t_p[0] = state_t[0]
-            t_p[1] = state_t[1]
-            t_angle[0] = state_t[2]
-            temp = t_angle[0] * 180 / np.pi
-            if temp >= 360:
-                temp -= 360
-            if temp < 0:
-                temp += 360
-            t_angle[0] = temp / 180 * np.pi
-
-            state_d = self.RK4(fun , state_d , d_dtheat , self.dt)
-            d_p[0] = state_d[0]
-            d_p[1] = state_d[1]
-            d_angle[0] = state_d[2]
-            temp = d_angle[0] * 180 / np.pi
-            if temp >= 360:
-                temp -= 360
-            if temp < 0:
-                temp += 360
-            d_angle[0] = temp / 180 * np.pi
-
-            state_a = self.RK4(fun , state_a , dtheatm , self.dt)
-            a_p[0] = state_a[0]
-            a_p[1] = state_a[1]
-            a_angle[0] = state_a[2]
-
-            if self.min_dist > np.linalg.norm(a_p - d_p):
-                self.min_dist = np.linalg.norm(a_p - d_p)
-            if self.min_dist < AD_END_DISTANCE :
-                break
-
-
-        self.agents[0].state.p_pos  = t_p
-        self.agents[0].angle = t_angle
-
-        self.agents[1].state.p_pos  = d_p
-        self.agents[1].angle = d_angle
-
-        self.landmarks[0].state.p_pos = a_p
-        self.landmarks[0].angel = a_angle
-
-
-
-        for agent in self.agents:
-            obs_n.append(self.get_obs(agent))
-            reward_n.append(self.get_reward(agent))
-        done_n = self.get_done(self.agents) 
-
-        reward = np.sum(reward_n)
-        if self.shared_reward:
-            reward_n = [reward] * self.n
+	#########################################
+	#...............................
+	#########################################
 
         return obs_n, reward_n, done_n   
 
